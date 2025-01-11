@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "types": ["vitest/importMeta"]
+  }
+}
