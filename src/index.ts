@@ -1,29 +1,56 @@
-const firstIsPredecessorOfSecond = (first: string, second: string): boolean => {
-  if (first.length === second.length - 1) {
-    let numDiffs = 0;
-    let firstIndex = 0;
-    for (let i = 0; i < second.length; i++) {
-      if (first.charAt(firstIndex) !== second.charAt(i)) {
-        numDiffs++;
-        if (numDiffs > 1) {
-          return false;
-        }
+type Color = "Y" | "B" | "G";
+function check(guess: string, answer: string): Array<Color> {
+  const result: Array<Color> = new Array(answer.length).fill("B");
+  const charToFreq = new Map<string, number>();
+  for (const ch of answer) {
+    const currentFreq = charToFreq.get(ch) ?? 0;
+    charToFreq.set(ch, currentFreq + 1);
+  }
+
+  // Check letters that are in the answer, and in the correct position.
+  for (let i = 0; i < answer.length; i += 1) {
+    if (guess.charAt(i) === answer.charAt(i)) {
+      result[i] = "G";
+      const currentFreq = charToFreq.get(answer.charAt(i)) ?? 0;
+      if (currentFreq === 1) {
+        charToFreq.delete(answer.charAt(i));
       } else {
-        // Only move the first word's index forward if there's a match.
-        firstIndex++;
+        charToFreq.set(answer.charAt(i), currentFreq - 1);
       }
     }
-    return true;
   }
-  return false;
-};
+
+  // Check for letters that are in the answer.
+  for (let i = 0; i < answer.length; i += 1) {
+    const currentCharacter = guess.charAt(i);
+    if (charToFreq.has(currentCharacter)) {
+      result[i] = "Y";
+    }
+  }
+
+  return result;
+}
 
 if (import.meta.vitest) {
   const { it, expect } = import.meta.vitest;
-  it("firstIsPredecessorOfSecond", () => {
-    expect(firstIsPredecessorOfSecond("abcd", "dbqca")).toBe(false);
-    expect(firstIsPredecessorOfSecond("dbqca", "abcd")).toBe(false);
-    expect(firstIsPredecessorOfSecond("ba", "abc")).toBe(false);
-    expect(firstIsPredecessorOfSecond("ab", "cab")).toBe(true);
+
+  it("checks green guesses", () => {
+    expect(check("baker", "tamer")).toStrictEqual(["B", "G", "B", "G", "G"]);
+  });
+
+  it("checks yellow guesses", () => {
+    expect(check("rouge", "tamer")).toStrictEqual(["Y", "B", "B", "B", "Y"]);
+  });
+
+  it("checks basic functionality", () => {
+    expect(check("CRAZY", "CRAWL")).toStrictEqual(["G", "G", "G", "B", "B"]);
+  });
+
+  it("checks blue and green letters", () => {
+    expect(check("NAIVE", "NICHE")).toStrictEqual(["G", "B", "Y", "B", "G"]);
+  });
+
+  it("checks a letter in the right position, and then the same letter again", () => {
+    expect(check("HELLO", "RAILS")).toStrictEqual(["B", "B", "B", "G", "B"]);
   });
 }
